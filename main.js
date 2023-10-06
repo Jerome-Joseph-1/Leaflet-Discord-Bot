@@ -146,7 +146,7 @@ client.on('interactionCreate', async (interaction)=>{
 Link : _${interaction.fields.getField('queryLink').value}_\n
 Code : ${"```"}${interaction.fields.getField('queryCode').value} ${"```"}
 <@${interaction.user.id}>\n
-@${process.env.SUPPORT_ROLE_NAME}`
+<@${process.env.SUPPORT_ROLE_NAME}>`
             },
             reason: 'Dont Clutter',
         });
