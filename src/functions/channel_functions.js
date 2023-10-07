@@ -50,7 +50,7 @@ async function rearrange_threads(guild, channel, currentParentId, archivedParent
     channel.setParent(archivedParentId);
 
     try {
-        const new_channel = await create_channel(guild, format_details(details_of_the_day), ChannelType.GuildForum, currentParentId);
+        const new_channel = await create_channel(guild,  '『📜』' + format_details(details_of_the_day), ChannelType.GuildForum, currentParentId);
         console.log('New Channel Created');
         return new_channel;
     } catch (err) {
