@@ -109,7 +109,7 @@ client.on('interactionCreate', async (interaction)=>{
         .setComponents(
             new ActionRowBuilder().setComponents(
                 new TextInputBuilder()
-                .setLabel("Subject")
+                .setLabel("Problem Title")
                 .setCustomId("queryTitle")
                 .setStyle(TextInputStyle.Short)
             ),
@@ -146,7 +146,7 @@ client.on('interactionCreate', async (interaction)=>{
 Link : _${interaction.fields.getField('queryLink').value}_\n
 Code : ${"```"}${interaction.fields.getField('queryCode').value} ${"```"}
 <@${interaction.user.id}>\n
-<@${process.env.SUPPORT_ROLE_NAME}>`
+<@&${process.env.SUPPORT_ROLE}>`
             },
             reason: 'Dont Clutter',
         });
