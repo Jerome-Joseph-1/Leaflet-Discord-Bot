@@ -210,7 +210,11 @@ client.on('interactionCreate', async (interaction)=>{
             })
         }
     } catch (err) {
-        interaction.reply("Something Failed, Contact the moderators for resolving this issue.")
+        console.log({err});
+        interaction.reply({
+            content: "Something Failed, Contact the moderators for resolving this issue.",
+            ephemeral: true
+        })
     }
 })
 
