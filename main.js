@@ -1,5 +1,6 @@
 require('dotenv').config();
 const fs = require('fs');
+const logger = require('./src/logging/logger');
 const { create_button, is_button_present } = require('./src/functions/button_functions');
 const { create_action_row } = require('./src/functions/action_row_functions')
 const { create_channel, send_daily_problems, rearrange_threads } = require('./src/functions/channel_functions')
@@ -26,15 +27,16 @@ const problem_links = readJSON('src/Json-Details/problems.json');
 var myGuild, activeDoubtsChannel, queryButtonChannel, problemsChannel;
 
 client.once('ready', async () => {
-    console.log(`Logged in as ${client.user.tag}`);
+    logger.info(`Logged in as ${client.user.tag}`); 
     try {
 
         myGuild = client.guilds.cache.get(process.env.GUILD_ID);
 
         activeDoubtsChannel = await create_channel(myGuild, '『📜』' + format_details(details_of_the_day), ChannelType.GuildForum, process.env.DISCUSSION);
+        logger.info(`Created/Retrieved activeDoubtsChannel: ${activeDoubtsChannel.name}`); 
 
         queryButtonChannel = await create_channel(myGuild, "『💡』create-query", ChannelType.GuildText, process.env.DISCUSSION);
-
+        logger.info(`Created/Retrieved queryButtonChannel: ${queryButtonChannel.name}`); 
         const isPresent = await is_button_present( queryButtonChannel );
 
         if( !isPresent ) {
@@ -47,10 +49,15 @@ client.once('ready', async () => {
                 content: 'Click to create query',
                 components: [actionRow],
             })
+
+            logger.info(`Created and sent queryButton`);
         }
         problemsChannel = await create_channel(myGuild, "『❓』problems", ChannelType.GuildText, process.env.DISCUSSION);
+        logger.info(`Created/Retrieved problemsChannel: ${problemsChannel.name}`); 
+
     } catch (err) {
-        console.log({err});
+        logger.error('Error during initialization\nERROR::');
+        logger.error(err);
     }   
 });
 
@@ -63,23 +70,26 @@ client.on('interactionCreate', async (interaction)=>{
                     content: 'Problems Sent',
                     ephemeral: true
                 })
+                logger.info('Sent daily problems.');
             } else if(interaction.commandName === 'set-next-day') {
                 details_of_the_day.day_count += 1;
     
                 try {
                     await fs.promises.writeFile('./src/Json-Details/details.json', JSON.stringify(details_of_the_day));
-                    console.log('Details updated and saved.');
+                    logger.info('Details updated and saved.');
+
                 } catch (err) {
-                    console.error('Error writing details.json:', err);
+                    logger.error({ err }, 'Error writing details.json');
                 }
     
                 activeDoubtsChannel = await rearrange_threads(myGuild, activeDoubtsChannel, process.env.DISCUSSION, process.env.ARCHIVE, details_of_the_day);
-    
-                // Uncomment the following line after adding problems to problems.json
+                logger.info('Rearranged threads in activeDoubtsChannel.');
+
+                // TODO : Uncomment the following line after adding problems to problems.json
                 // send_daily_problems(problemsChannel, details_of_the_day, problem_links);
     
                 interaction.reply({
-                    content: 'Problems Sent',
+                    content: 'Next Day is Set',
                     ephemeral: true
                 })
             } else if(interaction.commandName === 'send-completed-button') {
@@ -92,9 +102,9 @@ client.on('interactionCreate', async (interaction)=>{
     
                 try {
                     await interaction.channel.send({ content : `Press the button to close the thread.`, components: [actionRow]})
-                    console.log("Completed Button Created");
+                    logger.info(`Completed Button Created for user : [${mentionedUser.user.id}, ${mentionedUser.user.username}]`);
                 } catch (error) {
-                    console.error('Error Adding Query Button:', error);
+                    logger.error({error}, 'Error Adding Query Button:');
                 }
     
                 interaction.reply({
@@ -138,7 +148,10 @@ client.on('interactionCreate', async (interaction)=>{
     
             interaction.showModal(modal);
         } else if(interaction.type === InteractionType.ModalSubmit) {
-            console.log("Registering Thread");
+            logger.info("Registering Thread", {
+                "user_details":[interaction.user.id,
+                interaction.user.tag,]
+            });
             
             const thread = await activeDoubtsChannel.threads.create({
                 name: interaction.fields.getField('queryTitle').value,
@@ -151,7 +164,14 @@ client.on('interactionCreate', async (interaction)=>{
                 },
                 reason: 'Dont Clutter',
             });
-            console.log("Thread Registered");
+            let details = {
+                "user": [interaction.user.id, interaction.user.tag],
+                "thread_created_at": thread.createdAt,
+                "thread_create_timestamp": thread.createdTimestamp,
+                "thread_id": thread.id
+            }
+            logger.info(details);
+            logger.info(`Thread Registered`);
     
             const threadLink = `https://discord.com/channels/${activeDoubtsChannel.id}/${thread.id}`
             interaction.reply({
@@ -161,13 +181,15 @@ client.on('interactionCreate', async (interaction)=>{
         } else if(interaction.isButton && interaction.customId?.split(':')[0] === "completedButton") {
     
             if(interaction.customId.split(':')[1] === interaction.user.id || interaction.user.id === process.env.MODERATOR_ROLE) {
-                console.log("Owner Closed The Thread");
-                
+                logger.info("Owner Closed The Thread", {
+                    "user_id" : interaction.user.id,
+                    "user_tag": interaction.user.tag 
+                });
                 await interaction.message.edit({
                     content: 'Thread Closed.',
                     components: [],
                 });
-                console.log('Action Completed by user.');
+                logger.info('Action Completed by user.');
                 
                 const messages = await interaction.channel.messages.fetch({ limit: 1, after: 0 });
                 const firstMessage = messages.first();
@@ -198,9 +220,9 @@ client.on('interactionCreate', async (interaction)=>{
                 content: 'Action has been canceled. Buttons have been removed.',
                 components: [],
               });
-              console.log('Action canceled by user.');
+              logger.info('Action canceled by user.');
             } catch (error) {
-              console.error('Error removing buttons:', error);
+                logger.error('Error removing buttons:', error);
             }
         
         } else {
@@ -210,7 +232,7 @@ client.on('interactionCreate', async (interaction)=>{
             })
         }
     } catch (err) {
-        console.log({err});
+        logger.fatal({err});
         interaction.reply({
             content: "Something Failed, Contact the moderators for resolving this issue.",
             ephemeral: true
