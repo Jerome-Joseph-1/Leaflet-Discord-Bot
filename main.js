@@ -158,7 +158,7 @@ client.on('interactionCreate', async (interaction)=>{
                 content: `Your query now has a dedicated thread where you can continue the discussion. \nFeel free to engage in the conversation there. \nClick this link to take you there : ${threadLink}`,
                 ephemeral: true
             })
-        }  else if(interaction.isButton && interaction.customId?.split(':')[0] === "completedButton") {
+        } else if(interaction.isButton && interaction.customId?.split(':')[0] === "completedButton") {
     
             if(interaction.customId.split(':')[1] === interaction.user.id || interaction.user.id === process.env.MODERATOR_ROLE) {
                 console.log("Owner Closed The Thread");
