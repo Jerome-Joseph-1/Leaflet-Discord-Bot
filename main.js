@@ -181,10 +181,11 @@ client.on('interactionCreate', async (interaction)=>{
         } else if(interaction.isButton && interaction.customId?.split(':')[0] === "completedButton") {
     
             if(interaction.customId.split(':')[1] === interaction.user.id || interaction.user.id === process.env.MODERATOR_ROLE) {
-                logger.info("Owner Closed The Thread", {
+                logger.info("Owner Closed The Thread");
+                logger.info({
                     "user_id" : interaction.user.id,
                     "user_tag": interaction.user.tag 
-                });
+                })
                 await interaction.message.edit({
                     content: 'Thread Closed.',
                     components: [],
@@ -222,7 +223,8 @@ client.on('interactionCreate', async (interaction)=>{
               });
               logger.info('Action canceled by user.');
             } catch (error) {
-                logger.error('Error removing buttons:', error);
+                logger.error('Error removing buttons:');
+                logger.error(error)
             }
         
         } else {
@@ -232,7 +234,7 @@ client.on('interactionCreate', async (interaction)=>{
             })
         }
     } catch (err) {
-        logger.fatal({err});
+        logger.fatal(err);
         interaction.reply({
             content: "Something Failed, Contact the moderators for resolving this issue.",
             ephemeral: true
