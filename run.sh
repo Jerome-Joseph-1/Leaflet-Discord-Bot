@@ -1,1 +1,1 @@
-nohup node main.js > output.log &
+nohup node main.js >> output.log &
