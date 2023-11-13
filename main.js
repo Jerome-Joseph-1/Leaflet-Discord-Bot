@@ -156,11 +156,11 @@ client.on('interactionCreate', async (interaction)=>{
             const thread = await activeDoubtsChannel.threads.create({
                 name: interaction.fields.getField('queryTitle').value,
                 message: {
-                    content: `### ${interaction.fields.getField('description').value}\n
-    Link : _${interaction.fields.getField('queryLink').value}_\n
-    Code : ${"```"}${interaction.fields.getField('queryCode').value} ${"```"}
-    <@${interaction.user.id}>\n
-    <@&${process.env.SUPPORT_ROLE}>`
+                    content: `# __${interaction.fields.getField('queryTitle').value}__\n\n
+## ${interaction.fields.getField('description').value}\n
+### Link: ${interaction.fields.getField('queryLink').value}\n\n
+Code: ${"```"}${interaction.fields.getField('queryCode').value} ${"```"}\n
+<@${interaction.user.id}> <@&${process.env.SUPPORT_ROLE}>`
                 },
                 reason: 'Dont Clutter',
             });
