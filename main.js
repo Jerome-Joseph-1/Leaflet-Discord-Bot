@@ -180,7 +180,7 @@ Code: ${"```"}${interaction.fields.getField('queryCode').value} ${"```"}\n
             })
         } else if(interaction.isButton && interaction.customId?.split(':')[0] === "completedButton") {
     
-            if(interaction.customId.split(':')[1] === interaction.user.id || interaction.user.id === process.env.MODERATOR_ROLE) {
+            if(interaction.customId.split(':')[1] === interaction.user.id || [process.env.MODERATOR_ROLE, process.env.SUPPORT_ROLE].includes(interaction.user.id)) {
                 logger.info("Owner Closed The Thread");
                 logger.info({
                     "user_id" : interaction.user.id,
