@@ -32,7 +32,7 @@ client.once('ready', async () => {
 
         myGuild = client.guilds.cache.get(process.env.GUILD_ID);
 
-        activeDoubtsChannel = await create_channel(myGuild, '『📜』' + format_details(details_of_the_day), ChannelType.GuildForum, process.env.DISCUSSION);
+        activeDoubtsChannel = await create_channel(myGuild, '『📜』' + format_details(details_of_the_day), ChannelType.GuildText, process.env.DISCUSSION);
         logger.info(`Created/Retrieved activeDoubtsChannel: ${activeDoubtsChannel.name}`); 
 
         queryButtonChannel = await create_channel(myGuild, "『💡』create-query", ChannelType.GuildText, process.env.DISCUSSION);
@@ -155,13 +155,7 @@ client.on('interactionCreate', async (interaction)=>{
             
             const thread = await activeDoubtsChannel.threads.create({
                 name: interaction.fields.getField('queryTitle').value,
-                message: {
-                    content: `# __${interaction.fields.getField('queryTitle').value}__\n\n
-## ${interaction.fields.getField('description').value}\n
-### Link: ${interaction.fields.getField('queryLink').value}\n\n
-Code: ${"```"}${interaction.fields.getField('queryCode').value} ${"```"}\n
-<@${interaction.user.id}> <@&${process.env.SUPPORT_ROLE}>`
-                },
+                type: ChannelType.PrivateThread,
                 reason: 'Dont Clutter',
             });
             let details = {
@@ -171,8 +165,15 @@ Code: ${"```"}${interaction.fields.getField('queryCode').value} ${"```"}\n
                 "thread_id": thread.id
             }
             logger.info(details);
+            
+            thread.send(`# __${interaction.fields.getField('queryTitle').value}__
+## ${interaction.fields.getField('description').value}
+### Link: ${interaction.fields.getField('queryLink').value}
+Code: ${"```"}${interaction.fields.getField('queryCode').value} ${"```"}
+<@${interaction.user.id}> <@&${process.env.SUPPORT_ROLE}>`)
+            
             logger.info(`Thread Registered`);
-    
+            
             const threadLink = `https://discord.com/channels/${activeDoubtsChannel.id}/${thread.id}`
             interaction.reply({
                 content: `Your query now has a dedicated thread where you can continue the discussion. \nFeel free to engage in the conversation there. \nClick this link to take you there : ${threadLink}`,
@@ -228,10 +229,16 @@ Code: ${"```"}${interaction.fields.getField('queryCode').value} ${"```"}\n
             }
         
         } else {
-            interaction.reply({
-                content: 'You do not have permission for this',
-                ephemeral: true,
-            })
+            try {
+                interaction.reply({
+                    content: 'You do not have permission for this',
+                    ephemeral: true,
+                })
+            }
+            catch(err) {
+                logger.fatal('Failed to send Interaction')
+                logger.fatal(err)
+            }
         }
     } catch (err) {
         logger.fatal(err);
